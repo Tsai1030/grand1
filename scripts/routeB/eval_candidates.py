@@ -9,7 +9,8 @@
   syl_rate ＝音節數 ÷ 去頭尾靜音後的長度
   ASR      ＝asr_check.py 的結果（key_hit、problem）
 挑 seed（每個方法、每句）：先排除 ASR「有問題」的（全部都有問題就全部留著並標記），
-  再用分數＝0.4×min(f0_std/阿公基準, 1.2) ＋ 0.15×句尾走向接近度 ＋ 0.25×sim_dn/0.80 ＋ 0.2×key_hit − 2×max(jump−0.03, 0) 取最高。
+  再用分數＝0.2×key_hit ＋ 0.3×max(tone_r,0) ＋ 0.25×min(f0_std/阿公基準, 1.2) ＋ 0.1×句尾走向接近度 ＋ 0.15×sim_dn/0.80 − 2×max(jump−0.03, 0) 取最高。
+  （順序照使用者在意的：口音＝ASR＋tone_r（跟台灣腔原音的 F0 走向相關，tone_dtw.py）→ 抑揚頓挫 → 音色）
   句尾走向接近度＝max(0, 1 − |final_st − 阿公中位數| / 4)。
   （語調起伏是主要條件；跳動比例太高＝破音或怪聲扣分）
 整段：concat.py 串接 → routeB/passages/<方法>.wav，再量相似度、節奏（routeA/scripts/rhythm.py）、F0（3 秒片段中位數）、跳動。
@@ -33,6 +34,7 @@ from speaker_sim import AGONG_DENOISE_WAV, AGONG_RAW_WAV, SpeakerEmbedder, cosin
 from prosody_check import analyze as prosody_analyze  # noqa: E402
 import f0_stats  # noqa: E402
 import concat  # noqa: E402
+import tone_dtw  # noqa: E402
 
 
 def load_rhythm():
@@ -47,6 +49,15 @@ def method_name(d: Path):
     parts = rel.parts
     pre = {"cosyvoice": "cv", "omnivoice": "ov", "seedvc": "vc"}.get(parts[0], parts[0])
     return "_".join([pre] + list(parts[1:]))
+
+
+def en_std(y16):
+    """能量起伏：說話幀（強度高於門檻）的 RMS dB 標準差（25 ms 視窗、10 ms hop）。越大＝輕重音差越明顯。"""
+    rms = librosa.feature.rms(y=y16, frame_length=400, hop_length=160)[0]
+    db = 20 * np.log10(np.maximum(rms, 1e-8))
+    thr = max(np.percentile(db, 95) - 30, np.percentile(db, 10) + 6)
+    v = db[db > thr]
+    return round(float(np.std(v)), 2) if len(v) > 20 else None
 
 
 def f0_chunk_median(y16, chunk=3.0):
@@ -92,10 +103,11 @@ def main():
                 round(float(np.mean([cosine(e, r) for r in ref_raw])), 4))
 
     # 阿公基準（同一把尺）：12 段去噪片段切 3 秒的 F0 起伏中位數
-    ag, ag_ct = [], []
+    ag, ag_ct, ag_en = [], [], []
     for f in sorted((ROOT / "stage1" / "segments").glob("*.wav")):
         y = librosa.load(str(f), sr=16000)[0]
         ag.append(f0_chunk_median(y))
+        ag_en.append(en_std(y))
         # 語調走向：在停頓處切成短句（約 1.5 秒以上），每句算句尾走向與斜率
         for part in f0_stats.split_chunks(y, 1.5):
             c = f0_stats.contour(part)
@@ -110,6 +122,7 @@ def main():
     rhythm = load_rhythm()
     result = {"agong_f0_ref": {"f0_std_st": round(ag_std, 2), "f0_range_st": round(ag_rng, 2), "final_st": round(ag_final, 2),
                                "slope_st_s": round(ag_slope, 2), "n_phrases": len(ag_ct),
+                               "en_std_db": round(float(np.median([e for e in ag_en if e])), 2),
                                "final_st_all": [c["final_st"] for c in ag_ct]}, "methods": {}}
     for d in (Path(x).resolve() for x in args.methods):
         name = method_name(d)
@@ -126,10 +139,11 @@ def main():
             a = asr.get(str(f.resolve()).lower(), {})
             jump = pr["pitch_jump_ratio"] if np.isfinite(pr["pitch_jump_ratio"]) else 0.0
             ct = f0_stats.contour(y16) or {"final_st": 0.0, "slope_st_s": 0.0}
+            tr = tone_dtw.tone_r(y16, sid)
             rows.append({"file": str(f.relative_to(ROOT)), "id": sid, "seed": seed, "dur": round(len(yt) / 24000, 2),
                          "syl_rate": round(sents[sid]["syllables"] / max(len(yt) / 24000, 0.1), 2),
                          "f0_std_st": st["f0_std_st"], "f0_range_st": st["f0_range_st"], "f0_median_hz": st["f0_median_hz"],
-                         "final_st": ct["final_st"], "slope_st_s": ct["slope_st_s"], "jump": round(jump, 4), "sim_dn": sdn, "sim_raw": sraw,
+                         "final_st": ct["final_st"], "slope_st_s": ct["slope_st_s"], "tone_r": tr, "en_std_db": en_std(y16), "jump": round(jump, 4), "sim_dn": sdn, "sim_raw": sraw,
                          "asr": a.get("asr"), "key_hit": a.get("key_hit"), "asr_problem": a.get("problem")})
         # 挑 seed
         pick = []
@@ -140,8 +154,9 @@ def main():
             for r in pool:
                 kh = r["key_hit"] if r["key_hit"] is not None else 0.5
                 like_final = max(0.0, 1 - abs(r["final_st"] - ag_final) / 4.0)   # 句尾走向越接近阿公越好
-                r["score"] = round(0.4 * min(r["f0_std_st"] / ag_std, 1.2) + 0.15 * like_final + 0.25 * r["sim_dn"] / 0.80
-                                   + 0.2 * kh - 2 * max(r["jump"] - 0.03, 0), 4)
+                trr = max(r["tone_r"] or 0.0, 0.0)
+                r["score"] = round(0.2 * kh + 0.3 * trr + 0.25 * min(r["f0_std_st"] / ag_std, 1.2) + 0.1 * like_final
+                                   + 0.15 * r["sim_dn"] / 0.80 - 2 * max(r["jump"] - 0.03, 0), 4)
             best = max(pool, key=lambda r: r["score"])
             best["picked"] = True
             pick.append({"id": sid, "file": best["file"], "seed": best["seed"], "all_seeds_asr_problem": all_bad})
@@ -159,11 +174,16 @@ def main():
             m["passage"]["text_rate"] = m["concat"]["text_rate"]
             pr_rows = [r for r in rows if r.get("picked")]
             m["passage"]["final_st_median"] = round(float(np.median([r["final_st"] for r in pr_rows])), 2)
+            trs = [r["tone_r"] for r in pr_rows if r["tone_r"] is not None]
+            m["passage"]["en_std_db_sent_median"] = round(float(np.median([r["en_std_db"] for r in pr_rows if r["en_std_db"]])), 2)
+            m["passage"]["tone_r_mean"] = round(float(np.mean(trs)), 3) if trs else None
+            m["passage"]["asr_ok_sentences"] = f"{sum(1 for r in pr_rows if r['asr_problem'] is False)}/{len(pr_rows)}"
+            m["passage"]["f0_std_st_sent_median"] = round(float(np.median([r["f0_std_st"] for r in pr_rows])), 2)
         result["methods"][name] = m
         ps = m.get("passage", {})
         print(f"{name}\tASR OK seeds {m['asr_ok_seeds']}\t挑中有問題句 {m['asr_problem_sentences_in_pick']}\t"
               f"整段 {ps.get('sec')}s sim_dn {ps.get('sim_dn')} sim_raw {ps.get('sim_raw')} "
-              f"F0std {ps.get('f0_std_st_chunk')} range {ps.get('f0_range_st_chunk')} final {ps.get('final_st_median')} "
+              f"ASR {ps.get('asr_ok_sentences')} tone_r {ps.get('tone_r_mean')} F0std {ps.get('f0_std_st_chunk')} range {ps.get('f0_range_st_chunk')} final {ps.get('final_st_median')} "
               f"字/秒 {ps.get('text_rate')} rate {ps.get('speech_rate')} "
               f"pause {ps.get('pause_ratio')} jump {ps.get('jump')}", flush=True)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
