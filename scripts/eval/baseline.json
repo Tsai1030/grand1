@@ -1,0 +1,391 @@
+{
+  "created": "2026-10-11T01:08:48",
+  "source": {
+    "agong_original": "stage1\\wav\\male_voice_only.wav",
+    "from": "inputs/male_voice_only.mp3（ffmpeg 轉單聲道 wav，保留 44.1 kHz）",
+    "duration_sec": 103.819,
+    "half_split_sec": 48.658,
+    "half_split_rule": "中點 ±10% 內最安靜的 0.3 秒視窗（與 speaker_sim.py --agong-halves 相同）",
+    "voice_reference_15s_location_in_original_sec": [
+      37.05,
+      50.47
+    ],
+    "voice_reference_15s_locate_corr": [
+      0.993,
+      0.987
+    ],
+    "main_version": "denoise",
+    "segments_kept": 12
+  },
+  "speaker": {
+    "campplus": {
+      "model_id": "iic/speech_campplus_sv_zh-cn_16k-common",
+      "agong_original_first_vs_second_half": 0.9393,
+      "voice_reference_15s_vs_rest_of_original": 0.9064,
+      "voice_reference_15s_vs_original_first_half": 0.9377,
+      "voice_reference_15s_vs_original_second_half": 0.8874,
+      "denoise_first_vs_second_half": 0.9008,
+      "segments_main_vs_other_original_half": {
+        "mean": 0.7092,
+        "min": 0.61,
+        "max": 0.7859,
+        "n": 12
+      },
+      "segments_orig_vs_other_original_half": {
+        "mean": 0.8314,
+        "min": 0.7583,
+        "max": 0.8964,
+        "n": 12
+      },
+      "versions_vs_original": {
+        "original": {
+          "same_content": 1.0,
+          "cross_half": 0.9393
+        },
+        "denoise": {
+          "same_content": 0.8493,
+          "cross_half": 0.7973
+        },
+        "enhance": {
+          "same_content": 0.5568,
+          "cross_half": 0.5277
+        },
+        "enhance_lambd0.5": {
+          "same_content": 0.6076,
+          "cross_half": 0.5686
+        }
+      },
+      "denoise_plus_original_noise_cross_half": 0.892
+    },
+    "eres2netv2": {
+      "model_id": "iic/speech_eres2netv2_sv_zh-cn_16k-common",
+      "agong_original_first_vs_second_half": 0.9373,
+      "voice_reference_15s_vs_rest_of_original": 0.9158,
+      "voice_reference_15s_vs_original_first_half": 0.9349,
+      "voice_reference_15s_vs_original_second_half": 0.9039,
+      "denoise_first_vs_second_half": 0.9085,
+      "segments_main_vs_other_original_half": {
+        "mean": 0.7223,
+        "min": 0.578,
+        "max": 0.8037,
+        "n": 12
+      },
+      "segments_orig_vs_other_original_half": {
+        "mean": 0.8596,
+        "min": 0.7709,
+        "max": 0.9134,
+        "n": 12
+      },
+      "versions_vs_original": {
+        "original": {
+          "same_content": 1.0,
+          "cross_half": 0.9373
+        },
+        "denoise": {
+          "same_content": 0.8551,
+          "cross_half": 0.7927
+        },
+        "enhance": {
+          "same_content": 0.5666,
+          "cross_half": 0.5405
+        },
+        "enhance_lambd0.5": {
+          "same_content": 0.628,
+          "cross_half": 0.6011
+        }
+      }
+    }
+  },
+  "speaker_note": {
+    "primary_model": "campplus",
+    "our_same_person_baseline": 0.9393,
+    "previous_same_person_baseline": 0.92,
+    "ratio_ours_to_previous": 1.021,
+    "previous_knnvc": [
+      0.6,
+      0.67
+    ],
+    "knnvc_threshold_scaled": 0.684,
+    "summary_zh": "CAM++ 量阿公原始錄音前半 vs 後半＝0.939，跟之前雲端的 0.92 很接近（比值 1.021），0.67 門檻可直接沿用；若要按比例換算，約為 0.684。注意：乾淨的阿公聲音（只去噪版）跟『有雜音的原始錄音』另一半比只有 0.797（把原始背景雜音加回去就回到 0.892，表示分數下降主要是雜音被拿掉，不是音色被改），主力片段（去噪、5–11 秒）跟原始錄音另一半比平均 0.709；所以乾淨的轉換結果對原始錄音前後半的分數，實際上限大概在 0.8 左右，看到 0.75–0.8 已經接近『真阿公、乾淨版』的水準。建議同時對去噪版前後半比一次（--halves stage1/enhanced/male_voice_only_denoise.wav），去噪版自己前後半互比＝0.901。"
+  },
+  "prosody": {
+    "agong_reference": {
+      "description": "主力版（只去噪）保留片段合計；判讀：測試音不高於此水準",
+      "params": {
+        "sr": 16000,
+        "hop": 160,
+        "f0_frame": 1024,
+        "rms_win": 1600,
+        "fmin": 60.0,
+        "fmax": 500.0,
+        "voicing": "librosa.pyin",
+        "jump_f0": "librosa.yin",
+        "peak_distance_frames": 15,
+        "peak_prominence_db": 3.0,
+        "jump_st": 3.0,
+        "loud_db": 8.0
+      },
+      "pooled": {
+        "files": 12,
+        "duration_sec": 93.384,
+        "voiced_sec": 58.28,
+        "pitch_jump_ratio": 0.015561450044208665,
+        "loud_words": 12,
+        "loud_per_10s": 2.059025394646534,
+        "per_file_pitch_jump_ratio_median": 0.01881976138192048,
+        "per_file_pitch_jump_ratio_p90": 0.031571688359453225,
+        "per_file_loud_per_10s_median": 1.6200339147286822,
+        "per_file_loud_per_10s_p90": 4.371405943321512
+      },
+      "per_file": {
+        "stage1\\segments\\agong_01.wav": {
+          "duration_sec": 11.376,
+          "voiced_sec": 7.68,
+          "voiced_pairs": 743,
+          "pitch_jumps": 14,
+          "pitch_jump_ratio": 0.018842530282637954,
+          "f0_median_hz": 146.88642519655863,
+          "f0_p5_p95_hz": [
+            102.67140308191227,
+            189.39099536127398
+          ],
+          "voiced_median_db": -20.18462371826172,
+          "loud_words": 1,
+          "loud_per_10s": 1.3020833333333335,
+          "loudest_over_median_db": 8.426679611206055,
+          "loud_word_times_sec": [
+            7.02
+          ]
+        },
+        "stage1\\segments\\agong_02.wav": {
+          "duration_sec": 6.474,
+          "voiced_sec": 3.84,
+          "voiced_pairs": 371,
+          "pitch_jumps": 2,
+          "pitch_jump_ratio": 0.005390835579514825,
+          "f0_median_hz": 144.363004329854,
+          "f0_p5_p95_hz": [
+            105.67990483153781,
+            242.16302107902376
+          ],
+          "voiced_median_db": -20.276412963867188,
+          "loud_words": 1,
+          "loud_per_10s": 2.604166666666667,
+          "loudest_over_median_db": 10.207537651062012,
+          "loud_word_times_sec": [
+            2.24
+          ]
+        },
+        "stage1\\segments\\agong_03.wav": {
+          "duration_sec": 6.204,
+          "voiced_sec": 4.45,
+          "voiced_pairs": 436,
+          "pitch_jumps": 1,
+          "pitch_jump_ratio": 0.0022935779816513763,
+          "f0_median_hz": 170.68872218367378,
+          "f0_p5_p95_hz": [
+            131.92486538031235,
+            209.90040042814388
+          ],
+          "voiced_median_db": -20.388973236083984,
+          "loud_words": 0,
+          "loud_per_10s": 0.0,
+          "loudest_over_median_db": 7.568953514099121,
+          "loud_word_times_sec": []
+        },
+        "stage1\\segments\\agong_04.wav": {
+          "duration_sec": 7.686,
+          "voiced_sec": 4.64,
+          "voiced_pairs": 449,
+          "pitch_jumps": 12,
+          "pitch_jump_ratio": 0.026726057906458798,
+          "f0_median_hz": 147.73732960138994,
+          "f0_p5_p95_hz": [
+            118.72475770471127,
+            272.5210629770105
+          ],
+          "voiced_median_db": -20.089069366455078,
+          "loud_words": 1,
+          "loud_per_10s": 2.1551724137931036,
+          "loudest_over_median_db": 8.014498710632324,
+          "loud_word_times_sec": [
+            0.76
+          ]
+        },
+        "stage1\\segments\\agong_05.wav": {
+          "duration_sec": 10.938,
+          "voiced_sec": 6.53,
+          "voiced_pairs": 636,
+          "pitch_jumps": 0,
+          "pitch_jump_ratio": 0.0,
+          "f0_median_hz": 131.6189975633551,
+          "f0_p5_p95_hz": [
+            103.2661724693196,
+            180.8384017769491
+          ],
+          "voiced_median_db": -19.451763153076172,
+          "loud_words": 0,
+          "loud_per_10s": 0.0,
+          "loudest_over_median_db": 7.302640914916992,
+          "loud_word_times_sec": []
+        },
+        "stage1\\segments\\agong_06.wav": {
+          "duration_sec": 7.434,
+          "voiced_sec": 4.78,
+          "voiced_pairs": 463,
+          "pitch_jumps": 9,
+          "pitch_jump_ratio": 0.019438444924406047,
+          "f0_median_hz": 122.09756305232236,
+          "f0_p5_p95_hz": [
+            104.37581555431524,
+            180.8384017769491
+          ],
+          "voiced_median_db": -20.7491397857666,
+          "loud_words": 4,
+          "loud_per_10s": 8.368200836820083,
+          "loudest_over_median_db": 10.390082359313965,
+          "loud_word_times_sec": [
+            3.54,
+            4.35,
+            4.56,
+            6.64
+          ]
+        },
+        "stage1\\segments\\agong_07.wav": {
+          "duration_sec": 5.98,
+          "voiced_sec": 3.56,
+          "voiced_pairs": 347,
+          "pitch_jumps": 0,
+          "pitch_jump_ratio": 0.0,
+          "f0_median_hz": 123.51626839721905,
+          "f0_p5_p95_hz": [
+            103.86438732073715,
+            169.48688956137738
+          ],
+          "voiced_median_db": -18.977134704589844,
+          "loud_words": 0,
+          "loud_per_10s": 0.0,
+          "loudest_over_median_db": 6.678221702575684,
+          "loud_word_times_sec": []
+        },
+        "stage1\\segments\\agong_08.wav": {
+          "duration_sec": 8.71,
+          "voiced_sec": 5.14,
+          "voiced_pairs": 495,
+          "pitch_jumps": 2,
+          "pitch_jump_ratio": 0.00404040404040404,
+          "f0_median_hz": 131.239962741593,
+          "f0_p5_p95_hz": [
+            102.08005931410268,
+            173.6723084928454
+          ],
+          "voiced_median_db": -20.588428497314453,
+          "loud_words": 2,
+          "loud_per_10s": 3.8910505836575875,
+          "loudest_over_median_db": 10.916000366210938,
+          "loud_word_times_sec": [
+            4.7,
+            6.27
+          ]
+        },
+        "stage1\\segments\\agong_09.wav": {
+          "duration_sec": 7.622,
+          "voiced_sec": 5.44,
+          "voiced_pairs": 532,
+          "pitch_jumps": 10,
+          "pitch_jump_ratio": 0.018796992481203006,
+          "f0_median_hz": 140.25326982734947,
+          "f0_p5_p95_hz": [
+            120.69515292814242,
+            183.99940136035207
+          ],
+          "voiced_median_db": -19.141088485717773,
+          "loud_words": 0,
+          "loud_per_10s": 0.0,
+          "loudest_over_median_db": 7.192819595336914,
+          "loud_word_times_sec": []
+        },
+        "stage1\\segments\\agong_10.wav": {
+          "duration_sec": 5.402,
+          "voiced_sec": 2.54,
+          "voiced_pairs": 246,
+          "pitch_jumps": 11,
+          "pitch_jump_ratio": 0.044715447154471545,
+          "f0_median_hz": 140.25326982734947,
+          "f0_p5_p95_hz": [
+            96.90890001600505,
+            333.58037276216095
+          ],
+          "voiced_median_db": -20.490985870361328,
+          "loud_words": 0,
+          "loud_per_10s": 0.0,
+          "loudest_over_median_db": 7.943088531494141,
+          "loud_word_times_sec": []
+        },
+        "stage1\\segments\\agong_11.wav": {
+          "duration_sec": 7.738,
+          "voiced_sec": 5.16,
+          "voiced_pairs": 501,
+          "pitch_jumps": 13,
+          "pitch_jump_ratio": 0.02594810379241517,
+          "f0_median_hz": 162.0419935401828,
+          "f0_p5_p95_hz": [
+            103.86438732073715,
+            216.30011102659927
+          ],
+          "voiced_median_db": -19.700031280517578,
+          "loud_words": 1,
+          "loud_per_10s": 1.937984496124031,
+          "loudest_over_median_db": 9.53452205657959,
+          "loud_word_times_sec": [
+            0.63
+          ]
+        },
+        "stage1\\segments\\agong_12.wav": {
+          "duration_sec": 7.82,
+          "voiced_sec": 4.52,
+          "voiced_pairs": 436,
+          "pitch_jumps": 14,
+          "pitch_jump_ratio": 0.03211009174311927,
+          "f0_median_hz": 127.13557132311544,
+          "f0_p5_p95_hz": [
+            100.64603665432466,
+            182.93964279069144
+          ],
+          "voiced_median_db": -20.6722412109375,
+          "loud_words": 2,
+          "loud_per_10s": 4.424778761061948,
+          "loudest_over_median_db": 11.728236198425293,
+          "loud_word_times_sec": [
+            0.33,
+            4.51
+          ]
+        }
+      }
+    },
+    "agong_segments_orig_pooled": {
+      "files": 12,
+      "duration_sec": 93.384,
+      "voiced_sec": 41.16,
+      "pitch_jump_ratio": 0.017402269861286256,
+      "loud_words": 4,
+      "loud_per_10s": 0.9718172983479106,
+      "per_file_pitch_jump_ratio_median": 0.015749007936507936,
+      "per_file_pitch_jump_ratio_p90": 0.06321637426900586,
+      "per_file_loud_per_10s_median": 0.0,
+      "per_file_loud_per_10s_p90": 3.610028348688873
+    },
+    "voice_reference_15s": {
+      "files": 1,
+      "duration_sec": 14.2,
+      "voiced_sec": 6.7,
+      "pitch_jump_ratio": 0.012403100775193798,
+      "loud_words": 1,
+      "loud_per_10s": 1.4925373134328357,
+      "per_file_pitch_jump_ratio_median": 0.012403100775193798,
+      "per_file_pitch_jump_ratio_p90": 0.012403100775193798,
+      "per_file_loud_per_10s_median": 1.4925373134328357,
+      "per_file_loud_per_10s_p90": 1.4925373134328357
+    }
+  }
+}

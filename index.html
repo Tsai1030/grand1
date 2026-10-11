@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>阿公台語語音：試聽</title>
+<style>
+:root { --bg:#fbfaf7; --fg:#222; --muted:#666; --card:#fff; --line:#e4e0d8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#17171a; --fg:#eee; --muted:#aaa; --card:#222226; --line:#333; } }
+body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui, "Noto Sans TC", sans-serif; }
+main { max-width:720px; margin:0 auto; }
+h1 { font-size:1.4rem; } h2 { font-size:1.15rem; margin-top:2rem; }
+.note, .intro { color:var(--muted); }
+.item { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; margin:10px 0; }
+.name { font-weight:600; } .desc { color:var(--muted); font-size:.92rem; margin:4px 0 8px; }
+audio { width:100%; }
+</style></head><body><main>
+<h1>阿公台語語音：試聽</h1><p class="intro">先聽「阿公本人」當對照，再聽各版本。聽的時候注意：口音像不像台灣台語、聲調有沒有唸錯、抑揚頓挫和重音像不像阿公、語速。相似度是跟阿公去噪錄音比（阿公自己前半對後半是 0.90）。</p>
+<section><h2>阿公本人（對照）</h2><p class="note">阿公的真實錄音，用來比對其他版本。</p><div class="item"><div class="name">agong_06_原始</div><div class="desc">原始錄音（未去噪）</div><audio controls preload="none" src="listen/0_agong/agong_06_原始.mp3"></audio></div><div class="item"><div class="name">agong_06_去噪</div><div class="desc">同一段，去噪後；這是模型主要的學習資料</div><audio controls preload="none" src="listen/0_agong/agong_06_去噪.mp3"></audio></div><div class="item"><div class="name">agong_08_去噪</div><div class="desc">另一段去噪後的阿公</div><audio controls preload="none" src="listen/0_agong/agong_08_去噪.mp3"></audio></div></section><section><h2>路線 A：網頁 TTS 原音 → Seed-VC 換成阿公音色</h2><p class="note">語調和節奏照抄網頁 TTS 原音（所以語調偏平），只有音色換成阿公。原音開頭仍有「大家好」。</p><div class="item"><div class="name">A_零樣本v1</div><div class="desc">對照：不訓練，只給 14 秒參考音。相似度 0.79，聲調保留 0.77</div><audio controls preload="none" src="listen/1_routeA/A_零樣本v1.mp3"></audio></div><div class="item"><div class="name">B_微調最佳</div><div class="desc">去噪片段微調 100 步＋乾淨參考音＋縮短停頓。相似度 0.87（最高），聲調保留 0.77；你之前覺得語速太快、語調平板</div><audio controls preload="none" src="listen/1_routeA/B_微調最佳.mp3"></audio></div><div class="item"><div class="name">C_44k聲碼器</div><div class="desc">換 44.1kHz 聲碼器。聲調最貼原音（0.90），但也最照搬原音的平板語調。相似度 0.80</div><audio controls preload="none" src="listen/1_routeA/C_44k聲碼器.mp3"></audio></div><div class="item"><div class="name">D_原始片段微調</div><div class="desc">同 B，但用未去噪片段微調：可能較有沙啞與空間感，帶一點底噪。相似度 0.86</div><audio controls preload="none" src="listen/1_routeA/D_原始片段微調.mp3"></audio></div><div class="item"><div class="name">E_v2改語氣_聲調風險高</div><div class="desc">v2 開啟語氣轉換。聲調保留只有 0.24，台語聲調可能被改壞，不建議</div><audio controls preload="none" src="listen/1_routeA/E_v2改語氣_聲調風險高.mp3"></audio></div></section>
+</main></body></html>
